@@ -1,6 +1,6 @@
 function [w, infos] = Nystrom_sgd(problem, in_options,reg,dp)
 
-    %rho is replaced by reg on 12th Jan 2022.
+    %rho is replaced by reg+rho on 12th Jan 2022.
     % If dp = 1 then NSGD-DP
     % else NSGD
 

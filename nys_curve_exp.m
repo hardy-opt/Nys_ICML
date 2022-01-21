@@ -1,24 +1,25 @@
 function  nys_curve_exp(darg) %4.8446772001339822e-01
-%     clc;
+     clc;
 %     clear;
     close all;
+    addpath('/data1/hardik')
     addpath(genpath(pwd));
    % addpath('/data/Datasets/'); % Dataset repository
-    NUM_RUN = 3;
-    NUM_EPOCH = 3;
+    NUM_RUN = 1;
+    NUM_EPOCH = 50;
     P = 10;  %Partition for DP sampling
     K = 50;  % No. of clusters for DP sampling
     dat = strcat('results_Jan22/',darg);  % result path
     method = {'NSVRG-D', 'NSGD-D','NSVRG','NSGD', 'Structured_QN', 'Structured_QF'};
     omethod = {'SVRG-LBFGS', 'SVRG-SQN', 'adam', 'SQN', 'OBFGS', 'SVRG', 'SGD', 'NEWTON'};
     BATCHES = [64];% 64 128];
-    COLS = [20];% 100];
+    COLS = [10 100];% 50];% 100]; %columns-a8a = [10,100,800], Epsilon = [100,800, 3200];
     for s=1:NUM_RUN
-        for reg=[1]% 0.1 0.01 0.001 0.0001]
-            for step = 0.001%[1 0.1 0.01 0.001 0.0001 0.00001]
+        for reg=[10]
+            for step = [1 0.1 0.01 0.001 0.0001 0.00001]
                 data = loaddata(s, reg, step, dat);                   
-                %for rho = [10 ]%1000 100 10 1 0.1 0.01 0.001]
-                    for m=1:4
+                for rho = [100 10 1 0.1 0.01 0.001 0.0001 0.00001]
+                    for m=1:5
                         for COL =  COLS 
                             if COL > size(data.x_train,1)
                                 break;
@@ -28,7 +29,7 @@ function  nys_curve_exp(darg) %4.8446772001339822e-01
                                     break;
                                 end
                                 %rng(s); % do not remove 
-                                fprintf('K%d - B%d - %s - Reg:%f - Step:%f - Run:%d\n', COL, BATCH_SIZE, method{m}, reg, step, s);
+                                fprintf('K%d - B%d - %s - Reg:%f - Step:%f - Rho:%f - Run:%d\n', COL, BATCH_SIZE, method{m}, reg, step, rho,s);
                                 options.max_epoch=NUM_EPOCH;    
                                 %problem = linear_svm(data.x_train, data.y_train, data.x_test, data.y_test,reg); 
                                 problem = logistic_regression1(data.x_train, data.y_train, data.x_test, data.y_test,reg); 
@@ -41,50 +42,51 @@ function  nys_curve_exp(darg) %4.8446772001339822e-01
                                 options.partitions = P;
                                 options.clusters = K;
 
-                                Name = sprintf('%s/K%d_B%d_%s_%.1e_R_%.1e_run_%d.mat',dat, COL, BATCH_SIZE, method{m},options.step_init,reg,s);
-
+                                Name = sprintf('%s/K%d_B%d_%s_%.1e_R_%.1e_rho_%.1e_run_%d.mat',dat, COL, BATCH_SIZE, method{m},options.step_init,reg,rho,s);
+                                lreg = reg + rho;
                                 
                                 if m==1
-                                   [w_s1, info_s1] = Nystrom_svrg(problem, options,reg,1);  % NSVRG-D
+                                   [w_s1, info_s1] = Nystrom_svrg(problem, options,lreg,1);  % NSVRG-D
                                    save(Name,'info_s1');
                                 elseif m==2
                                     options.step_alg = 'decay-2'; %decay
-                                    [w_s1, info_s1] = Nystrom_sgd(problem, options,reg,1); % NSGD-D
+                                    [w_s1, info_s1] = Nystrom_sgd(problem, options,lreg,1); % NSGD-D
                                     save(Name,'info_s1');
                                 elseif m==3
-                                   [w_s1, info_s1] = Nystrom_svrg(problem, options,reg,0);  % NSVRG
+                                   [w_s1, info_s1] = Nystrom_svrg(problem, options,lreg,0);  % NSVRG
                                    save(Name,'info_s1');
                                 elseif m==4
                                     options.step_alg = 'decay-2'; %decay
-                                    [w_s1, info_s1] = Nystrom_sgd(problem, options,reg,0); % NSGD
+                                    [w_s1, info_s1] = Nystrom_sgd(problem, options,lreg,0); % NSGD
                                     save(Name,'info_s1');
                                 elseif m==5
-                                    %if rho==rho(1)
+                                    if rho==rho(1)
                                     options.step_alg = 'decay-2';
-                                    [w_s1, info_s1] = structured_QN(problem, options,1);  %Nystrom
+                                    [w_s1, info_s1] = structured_QN_NEW(problem, options,1);  %Nystrom
                                     save(Name,'info_s1');
-                                    %end
+                                    end
                                 elseif m==6
-                                    %if rho==rho(1)
+                                    if rho==rho(1)
                                     options.step_alg = 'decay-2';
-                                    [w_s1, info_s1] = structured_QN(problem, options,0); %Fisher
+                                    [w_s1, info_s1] = structured_QN_NEW(problem, options,0); %Fisher
                                     save(Name,'info_s1');
-                                    %end
+                                    end
                                 end 
                             end
                             
                         end
                     end
-                %end
+                end
                  for BATCH_SIZE = BATCHES
                     if BATCH_SIZE > size(data.x_train,2)
                         break;
                     end
-                    for m=1:7
+                    for m=7:-7
                         
                         fprintf('%s - Reg:%f - Step:%f  - Run:%d\n', omethod{m}, reg, step, s);
                         options.max_epoch=NUM_EPOCH;    
-                        problem = logistic_regression1(data.x_train, data.y_train, data.x_test, data.y_test,reg); 
+                        %problem = logistic_regression1(data.x_train, data.y_train, data.x_test, data.y_test,reg); 
+                        problem = linear_svm(data.x_train, data.y_train, data.x_test, data.y_test,reg); 
                         options.w_init = data.w_init;   
                         options.step_alg = 'fix';
                         options.step_init = step; 
@@ -153,7 +155,9 @@ function [data]=loaddata(s,reg,step,dat)
     elseif strcmp(strs{end}, 'SMK_CAN')
         data = SMK_CAN(s,reg,step);
     elseif strcmp(strs{end}, 'GISETTE')
-        data = GISETTE(s,reg,step);    
+        data = GISETTE(s,reg,step);
+    elseif strcmp(strs{end}, 'A8A')
+        data = A8A(s,reg,step);
     else
         disp('Dataset tho de');
     end

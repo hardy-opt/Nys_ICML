@@ -5,10 +5,10 @@ function [] = final_plot()
     %Relativer error LINE 219
     RUNS = 3;
     EPOCHS = 50;
-    lambdas = [1e-1 1e-2 1e-3 1e-4];
+    lambdas = [1e-0 1e-1 1e-2 1e-3 1e-4];
     etas = [ 1e0 1e-1 1e-2 1e-3 1e-4 1e-5 ];
-    rhos = [ 0 1e3 1e2 1e1 1e0 1e-1 1e-2 1e-3 1e-4];
-    path = 'result/';
+    rhos = [  1e1 1e0 1e-1 1e-2 1e-3 1e-4 1e-5];
+    path = 'results_Jan22/';
    
     datasets = {
         'REALSIM'   %1 

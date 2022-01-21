@@ -8,7 +8,7 @@ function [w, infos] = structured_QN_NEW(problem, in_options, par)
     d = problem.dim();
     n = problem.samples();
     r1 = 0.1;
-    r2 = 2;
+    r2 = 10;
     alpha = 10;
     r = in_options.column-5; 
     % set local options 
@@ -60,8 +60,7 @@ function [w, infos] = structured_QN_NEW(problem, in_options, par)
 
     % main loop
     nofup = 0;
-    while (epoch < options.max_epoch)
-;            
+    while (epoch < options.max_epoch)            
            % alpha = total_iter + 1;
             w0 = w;
             
@@ -117,7 +116,7 @@ function [w, infos] = structured_QN_NEW(problem, in_options, par)
                     y_array(:,1) = [];
                 end     
               
-                 gamma1 = (s'*y)/(y'*y);
+                 gamma1 = 0.1;%(s'*y)/(y'*y);
 
            % end
             

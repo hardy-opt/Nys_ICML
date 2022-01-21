@@ -1,5 +1,5 @@
 function [w, infos] = Nystrom_svrg(problem, in_options,reg,dp)
-%rho is replaced by reg on 12th Jan 2022.
+%rho is replaced by reg+rho on 12th Jan 2022.
 
     % If dp = 1 then NSVRG-DP
     % else NSVRG
@@ -176,7 +176,7 @@ function [w, infos] = Nystrom_svrg(problem, in_options,reg,dp)
 
         % display infos
         if options.verbose > 0
-            fprintf('%s: Epoch = %03d, cost = %.6e, optgap = %.4e, time=%0.3f\n', 'Nystrom_svrg', epoch, f_val, optgap,elapsed_time);
+            fprintf('%s: Epoch = %03d, cost = %.16e, optgap = %.4e, time=%0.3f\n', 'Nystrom_svrg', epoch, f_val, optgap,elapsed_time);
         end
     end
     

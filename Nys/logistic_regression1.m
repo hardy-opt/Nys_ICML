@@ -52,7 +52,7 @@ classdef logistic_regression1
             sigmod_result = sigmoid(obj.y_train.*(w'*obj.x_train));
             sigmod_result = sigmod_result + (sigmod_result<eps).*eps;
             f = -sum(log(sigmod_result),2)/obj.n_train + obj.lambda * (w'*w) / 2;
-            
+%             
         end
         
          function f = cost_batch(obj, w, indices)
@@ -330,23 +330,35 @@ classdef logistic_regression1
                 for e = 1:sam
                     G(:,e) =  grad(obj,w,indice(e));
                 end
-                W = (1/sam)*G*G';
+                W = (1/sam)*(G*G');
             end
                       
 
-            O = randn(dimension,r);
+            O = rand(dimension,r);
             
             Z =  W*O;
             
             A = inv(O'*Z + 1e-5*eye(r));
-            
-            if all(eig(A)>0)
+            [U,Sg,V]=svd(A);
+            sv = diag(Sg);
+            if all((sv)>0)
                 A = A + 1e-5*(eye(r));
+                 C = chol(A);
             else
+                
                 A = A + eye(r);
+                
+                [U,Sg,V]=svd(A);
+                sv = diag(Sg);
+                
+                if any(sv)==0 || any(sv)<0
+                    
+                    A = A + diag(A);
+                    
+                end  
+                 C = chol(A);
+                
             end
-            
-            C = chol(A);
             
             Q = Z*C';
             
